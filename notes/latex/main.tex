@@ -1,0 +1,691 @@
+\documentclass[a4paper]{article}
+\usepackage[utf8]{inputenc}
+
+
+%=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+% PREAMBLE
+%=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Important styling notes
+%%
+% For now, to include img.jpg in img/path/to/img.jpg, just use:
+% path/to/img.jpg - for details see style.tex
+\input{style.tex}
+
+
+
+
+\begin{document}
+%=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+% GLOBAL STYLES (DOCUMENT SCOPE)
+%=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+% caption: Figure 1 -> <bold> Fig. 1 </bold>
+\captionsetup[figure]{labelfont={bf},labelformat={default},labelsep=period,name={Fig.}}
+
+
+%=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+% TITLE PAGE
+%=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+\input{title.tex}
+
+
+
+
+%=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+% MAIN DOCUMENT
+%=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+%------------------------------ New section ------------------------------%
+
+\section{Week 2 - Basic SQL operations}
+
+This week, we learn simple database server (MySql) commands.
+
+\subsection{The SQL environment}
+
+
+MySql needs three servers to run together which are all builtin the XAMPP (Windows)/ LAMPP (Linux)/ MAMPP (Mac) package. A Request response cycle from browser to web server (phpmyadmin), to the database server is illustrated below.
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=6.5cm]{img/week2/sql_query_model.png}
+    \caption{A typical SQL request.}
+    \label{fig:my_label}
+\end{figure}
+The main tool we use is the mysql command line and the sketch below shows how it interacts with the server and the DBA (user interface).
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=3.5cm]{img/week2/sql_tools.png}
+    \caption{SQL interface.}
+    \label{fig:my_label}
+\end{figure}
+Usually we never touch the database -- only create requests.
+
+
+\subsection{MySQL command line}
+
+\subsection{Running the mysql service (daemon) on Linux}
+
+
+\marginnote{The commands below are on Linux (LAMP) so adjust them to your OS.} 
+
+First thing before starting the MySql client is to ensure that the daemon is up. Search for the field \texttt{active} in the output:
+\begin{verbatim}
+$ systemctl status mysql
+<-- omitted -->
+Active: active (running) since Tue 2021-03-02 07:45:59 CET; 5 days ago
+<-- omitted -->
+\end{verbatim}
+If it's not active, start it with (assuming \texttt{systemctl} is the daemon manager):
+\begin{verbatim}
+sudo systemctl start mysql    
+\end{verbatim}
+
+Then we can enter the command line. MySQL needs to be executed as root:
+\begin{verbatim}
+sudo mysql    
+\end{verbatim}
+It starts the console, which looks as follows:
+\begin{verbatim}
+mysql> [command_to_run]
+[output]
+\end{verbatim}
+Each command is terminated by the \texttt{;} character. For example, to show the existing databses:
+\begin{verbatim}
+mysql> show databases;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| phpmyadmin         |
+| sys                |
++--------------------+
+5 rows in set (0.00 sec)
+\end{verbatim}
+One thing to remember is that the command line acts as a client. There can be many clients sending commands simultaneously but only one server.
+
+
+\subsubsection{Create databse in phpmyadmin}
+Go to the home menu, make sure you're in the "Database" tab and there should be an empty field with the title of the database to create along with a ``Create'' button.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=4cm]{img/week1/create_database_php.png}
+    \caption{Creating a database on phpmyadmin.}
+    \label{fig:my_label}
+\end{figure}
+
+If this is not the case, then it's likely the phpmyadmin user has no privilidge to create one. On Linux (LAMPP), this can be solved as follows via the command line (credits \url{https://stackoverflow.com/a/62313963})
+
+\begin{verbatim}
+sudo mysql
+mysql> grant create on *.* to user@localhost;
+mysql> FLUSH PRIVILEGES;
+\end{verbatim}
+
+Then log out and in phpmyadmin.
+
+\subsubsection{Create and modifiy a database in the command line}
+
+Make a new database and use it (use it is required if there are multiple tables in one databse):
+\begin{verbatim}
+CREATE DATABASE People;
+USE People
+\end{verbatim}
+Create a table with two columns (\texttt{name}, \texttt{email}), each of up to 128 characters:
+\begin{verbatim}
+CREATE TABLE Users (
+    name VARCHAR(128),
+    email VARCHAR(128)
+);
+\end{verbatim}
+\texttt{name}, \texttt{email} are the column field names and \texttt{VARCHAR(128)} is their data type. 
+
+To print the table that was created:
+\begin{verbatim}
+DESCRIBE Users
+\end{verbatim}
+Now we can insert some data in the table. Note the syntax
+\begin{verbatim}
+INSERT INTO Users (name, email) VALUES ('Tom', 'tom@umich.edu');
+INSERT INTO Users (name, email) VALUES ('Jimbob', 'jimbob@umich.edu');
+INSERT INTO Users (name, email) VALUES ('Leo', 'leo@umich.edu');
+INSERT INTO Users (name, email) VALUES ('Mike', 'mike@umich.edu');
+INSERT INTO Users (name, email) VALUES ('Leo', 'leo2@umich.edu');
+\end{verbatim}
+Delete data with email \texttt{leo2@umich.edu}:
+\begin{verbatim}
+DELETE FROM Users WHERE email='leo2@umich.edu';
+\end{verbatim}
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=3cm]{img/week2/delete_statement.png}
+    \caption{Delete statement}
+    \label{fig:my_label}
+\end{figure}
+Change Jimbob's name to Joebob:
+\begin{verbatim}
+UPDATE Users SET name='Joebob' WHERE name='Jimbob';
+\end{verbatim}
+Change also him email accordingly:
+\begin{verbatim}
+UPDATE Users SET email='joebob@umich.edu' WHERE email='jimbob@umich.edu'
+\end{verbatim}
+Finally, there's the \texttt{retrieve} statement, which prints the selected data:
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=4cm]{img/week2/sql_retrieve_statement.png}
+    \caption{Retreive statement}
+    \label{fig:my_label}
+\end{figure}
+For exmaple:
+\begin{verbatim}
+SELECT * FROM Users;
+(Output)
++--------+------------------+
+| name   | email            |
++--------+------------------+
+| Tom    | tom@umich.edu    |
+| Joebob | joebob@umich.edu |
+| Leo    | leo@umich.edu    |
+| Mike   | mike@umich.edu   |
++--------+------------------+
+\end{verbatim}
+Or:
+\begin{verbatim}
+SELECT * FROM Users WHERE email='leo@umich.edu';
+(Output)
++------+---------------+
+| name | email         |
++------+---------------+
+| Leo  | leo@umich.edu |
++------+---------------+
+\end{verbatim}
+Next, there's the \texttt{ORDER BY} command, which sorts the selected data by a column. \texttt{ORDER BY} takes as input the output of \texttt{SELECT}, as demonstrated in the following example which sorts the table by email in descending order:
+\begin{verbatim}
+SELECT * FROM Users ORDER BY email;
+(Output)
++--------+------------------+
+| name   | email            |
++--------+------------------+
+| Joebob | joebob@umich.edu |
+| Leo    | leo@umich.edu    |
+| Mike   | mike@umich.edu   |
+| Tom    | tom@umich.edu    |
++--------+------------------+
+\end{verbatim}
+
+Finally, to delete a table we use the \texttt{DROP} command, e,g.
+\begin{verbatim}
+DROP TABLE Users;
+\end{verbatim}
+
+
+\subsection{Data Types in SQL}
+
+Data types describe the tables that make up a table. The fundamental data types in MySql are the following:
+\begin{enumerate}
+    \item Text (string) fields (small and large)
+         \texttt{VARCHAR(128)} allows us to enter data that may be from 0 to 128 characters, while \texttt{CHAR(128)} expects the length to be exactly 128 characters. \texttt{VARCHAR} is more commonly used. 
+        \begin{enumerate}
+            \item \texttt{CHAR} allocates the entire space (faster for small strings where length is known)
+            \item \texttt{VARCHAR} allocates a variable amount of space depending on the data length (less space).
+                \begin{itemize}
+                    \item \texttt{TINYTEXT} -- up to 256 characters
+                    \item \texttt{TEXT} -- up to 65k
+                    \item \texttt{MEDIUMTEXT} -- up to 16M
+                    \item \texttt{LONGTEXT} -- up to 4G
+                \end{itemize}
+                Generally, these larger \texttt{VARCHAR} data types are not used for indexing (\texttt{ORDER BY}).
+        \end{enumerate}
+    \item Binary fields (small and large)
+    Note that in SQL the difference between byte and character is that a character takes from 8 to 32 bits depending on the character set, while a byte always takes 8 bits. Binary types are rarely used and the sub-types are SMALL and LARGE.
+        \begin{itemize}
+            \item SMALL binary
+                \begin{enumerate}
+                    \item \texttt{BYTE(n)} -- up to 255 bytes
+                    \item \texttt{VARBINARY(n)} up to 65k bytes
+                \end{enumerate}
+            \item LARGE binary
+                Used for large raw data, images, PFDs, etc. No translation, indexing, or character set.
+                \begin{itemize}
+                    \item \texttt{TINYBLOB(n)} -- up to 255
+                    \item \texttt{BLOB(n)} -- up to 65k
+                    \item \texttt{MEDIUMBLOB} -- up to 16M
+                    \item \texttt{LONGBLOB(n)} -- up to 4G
+                \end{itemize}
+        \end{itemize}
+    Binary types are not indexed or sorted.
+    \item Numeric fields
+        \begin{itemize}
+            \item Integers. Integers are very efficiently stored in databases. They are sorted very efficiently, can be indexed, and easy to compare.
+            \begin{itemize}
+                \item \texttt{TINYINT} $(-2^7, 2^7)$
+                \item \texttt{SMALLINT} $(-2^{15}, 2^{15})$
+                \item \texttt{INT} -- (0 to 2 billion)
+                \item \texttt{BIGINT} -- $10^{18}$-ish
+            \end{itemize}
+            
+            \item Floating point numbers. Floating point numbers, e.g. 3.14 are not guaranteed to be represented perfectly accurately in memory. For example, $3.14$ could be stored as $3.140000001$. Standards such as IEEE 754 define how they are represented as bits. Their two sub-types  are FLOAT and DOUBLE.
+                \begin{itemize}
+                    \item FLOAT (32-bit) -- $10^{38}$, 7 digits of accuracy
+                    \item DOUBLE (64-bit) -- $10^{38}$, 14 digits of accuracy.
+                \end{itemize}
+        \end{itemize}
+    \item AUTO\_INCREMENT fields
+        These include dates (TIMESTAMP, DATETIME, DATA, TIME, NOW() function)
+\end{enumerate}
+The table below summarises the SQL data types.
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=6.5cm]{img/week2/MySQL-Data-Types-768x532.jpg}
+    \caption{MySQL data types.}
+    \label{fig:my_label}
+\end{figure}
+
+
+
+\subsection{Database Keys}
+
+In this part we explore how we can use the columns of a table. Before, we created a \texttt{Users} table and we will list some ways to optimise the indexing of its fields. The optimal way to design the table is listed in advance.
+\begin{verbatim}
+DROP TABLE Users;
+
+CREATE TABLE Users (
+    user_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+    name VARCHAR(128),
+    email VARCHAR(128),
+    PRIMARY KEY(user_id),
+    INDEX(email)
+);
+\end{verbatim}
+The first difference between this table against the simpler one created before is the \texttt{user\_id}. The \texttt{user\_id} uniquely identifies each row. Let's analyse its syntax:
+\begin{verbatim}
+user_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
+\end{verbatim}
+\begin{itemize}
+    \item \texttt{INT UNSIGNED} is simply the data type (positive)
+    \item \texttt{NOT NULL} means it's always required.
+    \item \texttt{AUTO\_INCREMENT} means ``please supply it if I don't''. The way it's supplied it it automatically starts from 0. Each time a row is inserted, it's incremented.
+\end{itemize}
+The next piece of syntax to note is the \texttt{PRIMARY KEY(user\_id)}. This means that \texttt{user\_id} will be used a lot for indexing, therefore hints MySQL to store it such that its lookup is optimise. \texttt{PRIMARY KEY} column values must be unique.
+
+The final piece of syntax to note is \texttt{INDEX(email)}. This tells MySQL to optimise \texttt{email} for lookups with \texttt{WHERE} clauses.
+
+We can then create the table again by using a \texttt{name} and \texttt{email} -- \texttt{user\_id} is assigned to each row automatically.
+\begin{verbatim}
+INSERT INTO Users (name, email) VALUES ('Tom','tom@umich.edu');INSERT INTO Users (name, email) VALUES ('Jimbob','jimbob@umich.edu');INSERT INTO Users (name, email) VALUES ('Leo','leo@umich.edu');INSERT INTO Users (name, email) VALUES ('Mike','mike@umich.edu');INSERT INTO Users (name, email) VALUES ('Leo','leo2@umich.edu');
+\end{verbatim}
+Notice the \texttt{user\_id}'s when printing the table:
+\begin{verbatim}
+SELECT * FROM Users;
+(Output)
++---------+--------+------------------+
+| user_id | name   | email            |
++---------+--------+------------------+
+|       1 | Tom    | tom@umich.edu    |
+|       2 | Jimbob | jimbob@umich.edu |
+|       3 | Leo    | leo@umich.edu    |
+|       4 | Mike   | mike@umich.edu   |
+|       5 | Leo    | leo2@umich.edu   |
++---------+--------+------------------+
+
+\end{verbatim}
+
+\subsection{Database Indexes}
+
+As a table gets large, scanning all the data to find a single row becomes very costly. When drchuck@gmail.com logs into Facebook, they must find a password amonst 500 million users. There are techniques to greatly shortn the scan as long as you can create data structures and maintain those structures -- like shortcuts. These structure are often hashes or trees.
+
+Binary trees quickly sorts the data, speeding up lookups, deletions, and insertions. To tell MySQL to index (store) the \texttt{email} column data with a binary tree, since we lookup \texttt{email} a lot, the syntax is as follows:
+\begin{verbatim}
+ALTER TABLE Users ADD INDEX ( email ) USING BTREE;
+\end{verbatim}
+\clearpage
+
+%--------------------------- WEEK 3 --------------------------- 
+\section{Week 3 - Relational Database Design}
+
+\subsection{Relational databse design}
+In this week we explore how to operate on multiple tables depending on each other. Database design starts with a visual diagram which depicts the tables, their keys, and their relationships such as below.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=5cm]{img/week3/db_diagram.png}
+    \caption{A diagram illustrating the relationships among multiple tables.}
+    \label{fig:my_label}
+\end{figure}
+
+The relationships between tables and their complexity define how performant the application running them will be. How do we write a good data model?
+
+\begin{enumerate}
+    \item Draw a picture of the data objects for our application and then figure out how to represent objects and their relationships.
+    \item Basic rule: don't put the same string data in twice -- use a relationship instead
+    \item When there is one thing in the ``real world'', there should only be one copy of it in the database.
+\end{enumerate}
+
+For instance, in the toy music application below, the string ``Paranoid'' would be saved a key of a table and all unique album names would make up a table.
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=5.5cm]{img/week3/music_app.png}
+    \caption{The UI of a music application.}
+    \label{fig:my_label}
+\end{figure}
+
+Before developing a data model, we have to look at each ``piece of info'' (e.g. track, album, etc.) and figure out what it represents -- is it the column of an object or an attribute of another objects. Then we can define the relationships between objects. Let's do this analysis on the music application. We have the following keys:
+
+\begin{itemize}
+    \item Title
+    \item Length
+    \item Artist
+    \item Album
+    \item Genre
+    \item Rating
+    \item Count
+\end{itemize}
+
+Title, length, length, genreand count all describe the same object -- a track.  The album and artist column contain several \textit{vertically duplicated strings} and each track may belong in the same album. Therefore album and artist are their own objects. Furthermore, we can argue that each album contains multiple tracks, i.e. each track \textit{belongs in} its own album. Also, each album belongs in an artist. We have grouped all keys in tables (such as ``track'') and established relationships between all tables. The remaining key to model is Genre. One artist doesn't always belong in the same genre. One album doesn't always belong in the same genre either, e.g. there may be multiple tracks in the same album that are of different genres. However it makes sense that each track belongs in a genre. In the end, each track belongs in both an album AND a genre.
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=5cm]{img/week3/music_app_data_model.png}
+    \caption{Data model of the music app.}
+    \label{fig:my_label}
+\end{figure}
+
+\subsection{Normalization and Foreign Keys}
+
+In this lecture we learn how to associate data from different tables. The process is called database normalisation. Database normalisation can be accomplished in different normal forms (NF), e.g. 1st, 2nd, 2.5th, and 3rd but for succinctness we only work on the 3rd. The rules for database normalisation are:
+\begin{itemize}
+	\item Do not replicate data -- instead, reference (i.e. point at) data.
+	\item Use integers for keys and for references
+	\item Add a special ``key'' column to each table, which you will make references to. For that key, we can use the \texttt{AUTO\_INCREMENT} keyword.
+\end{itemize}
+
+We will focus on the key, which is just a book-keeping mechanism. We will demonstrate the key terminology to our previous music app example.
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[height=5cm]{img/week3/primary_foreign_key_schematic.png}
+	\end{center}
+	\caption{Example of primary and foreign keys in music app.}
+\label{fig:}
+\end{figure}
+
+
+There exist 3 types of keys -- primary, logical, and foreign.
+
+\begin{itemize}
+	\item Primary -- integer that references a row, often \texttt{AUTO\_INCREMENT}.
+	\item Logical -- what the outside world uses for lookup (e.g. a user when they search our database). Usually a string.
+	\item Foreign -- When a table has a column containing a key that points to the primary key of another table..
+\end{itemize}
+Foreign keys are efficient when all primary keys are integers -- the also all foreign keys are integers.
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[height=3cm]{img/week3/primary_foreign_key_schematic.png}
+	\end{center}
+	\caption{Primary and foreign keys in the music app.}
+	\label{fig:}
+\end{figure}
+A good convention is to name the foreign key exactly as the primary key it points to.
+
+\textbf{Note:} Logical keys often change and they are strings. Why?
+\begin{itemize}
+	\item Logical keys often change, albeit slowly.
+	\item Relationships based on matching strings fields are less efficient than integers.
+\end{itemize}
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[height=3cm]{img/week3/primary_logical_key_account.png}
+	\caption{Primary and logical keys for a toy ``Account'' table.}
+	\label{fig:}
+\end{figure}
+
+
+
+\subsection{Building a physical schema}
+
+In this section the goal is to represent the relationships in the music app in Fig. \TODO by using keys. So we add a primary key \texttt{track\_id} and \texttt{album\_id} in tables ``Track'' and ``Album'' respectively and since ``Track'' belongs in ``Album'', we add a foreign key \texttt{album\_id} in ``Track'' which points to Album's primary key (\texttt{album\_id}).
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[height=4cm]{img/week3/album_track_keys.png}
+	\end{center}
+	\caption{Adding keys to track and album (track belongs in album).}
+	\label{fig:}
+\end{figure}
+
+We repeat this process for the Track belongs in Gengre and Album belongs in Artist and end up with the following data model.
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[height=4.5cm]{img/week3/track_album_artist_keys.png}
+	\end{center}
+	\caption{Data model (incl. keys) for artists, albums, and tracks.}
+	\label{fig:data_model_keys_music_app}
+\end{figure}
+
+Now we can implement the data model in MySQL. We work from top to bottom, i.e. establish the relationship between Artist and Album first, and then the relationship between Album and Track, Genre and Track. The code design (i.e. the order at which we create tables) follows Fig. \ref{fig:data_model_keys_music_app}. Therefore we begin by creating the artist table, then the artist, then the track. The full code is listed below.
+
+\lstinputlisting[language=SQL,caption={Music app code to create tables (\detokenize{src/week3/week3_music_app.sql)}.}, label=src:mylabel]{src/week3/week3_music.sql}
+
+
+We can now insert some data. Insert the outer layer data first, i..e artists and genres.
+
+\begin{verbatim}
+INSERT INTO Artist (name) VALUES ('Led Zeppelin');
+INSERT INTO Artist (name) VALUES ('Motorhead');
+\end{verbatim}
+
+For reference, the Artist table is now
+\begin{verbatim}
++-----------+--------------+
+| artist_id | name         |
++-----------+--------------+
+|         1 | Led Zeppelin |
+|         2 | Motorhead    |
++-----------+--------------+
+\end{verbatim}
+
+\begin{verbatim}
+INSERT INTO Genre (name) VALUES ('Heavy metal');
+INSERT INTO Genre (name) VALUES ('Rock');
+\end{verbatim}
+
+For reference, the Genre table is currently:
+\begin{verbatim}
++----------+-------------+
+| genre_id | name        |
++----------+-------------+
+|        1 | Heavy metal |
+|        2 | Rock        |
++----------+-------------+
+\end{verbatim}
+
+\marginnote{The foreign keys are NOT auto-incremented!}Next, work one layer inside, i.e. insert some albums. Notice we we refer to the artists by foreign key (integer) and not by string. Remember that the foreign keys are NOT auto-incremented.
+
+\begin{verbatim}
+INSERT INTO Album (title, artist_id) VALUES ('Overkill', 2);
+INSERT INTO Album (title, artist_id) VALUES ('IV', 1);
+\end{verbatim}
+The album table is:
+\begin{verbatim}
++----------+----------+-----------+
+| album_id | title    | artist_id |
++----------+----------+-----------+
+|        1 | Overkill |         2 |
+|        2 | IV       |         1 |
++----------+----------+-----------+
+\end{verbatim}
+
+Finally, let's insert some tracks, namely
+\begin{itemize}
+	\item ``Stairway to Heaven'' by ``Led Zeppelin'' (1), in album ``IV'' (2), of genre Rock (2).
+	\item ``Black Dog'' by ``Led Zeppelin'' (1), in album ``IV'' (2), of genre Rock (2).
+	\item ``Stay Clean'' by ``Motorhead'' (2), in album ``Overkill'' (1), of genre Heavy Metal (1).
+	\item ``No Class'' by ``Motorhead'' (2), in album ``Overkill'' (1), of genre Heavy Metal (1).
+\end{itemize}
+
+\begin{verbatim}
+INSERT INTO Track (title, rating, len, count, album_id, genre_id) VALUES ('Black Dog', 5, 297, 0, 2, 2);
+mysql> INSERT INTO Track (title, rating, len, count, album_id, genre_id) VALUES ('Stairway', 5, 297, 0, 2, 2);
+mysql> INSERT INTO Track (title, rating, len, count, album_id, genre_id) VALUES ('Stay Clean', 5, 159, 0, 1, 1);
+\end{verbatim}
+Out Track table looks as follows:
+\begin{verbatim}
++----------+------------+------+--------+-------+----------+----------+
+| track_id | title      | len  | rating | count | album_id | genre_id |
++----------+------------+------+--------+-------+----------+----------+
+|        1 | Black Dog  |  297 |      5 |     0 |        2 |        2 |
+|        2 | Stairway   |  297 |      5 |     0 |        2 |        2 |
+|        3 | Stay Clean |  159 |      5 |     0 |        1 |        1 |
+|        4 | No Class   |  163 |      5 |     0 |        1 |        1 |
++----------+------------+------+--------+-------+----------+----------+
+\end{verbatim}
+
+
+
+
+\subsection{The \texttt{JOIN} operation}
+
+The \texttt{JOIN} operation \textit{links across several data tables} as part of a \texttt{SELECT} operation. You must tell the JOIN \textit{how to use keys} that make the connection between tables using an \texttt{ON} clause. In the context of the music app, it could help is query a certain artist from all albums. Below is how the syntax works.
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[height=2cm]{img/week3/join_clause_syntax.png}
+	\end{center}
+	\caption{Join operation syntax.}
+	\label{fig:}
+\end{figure}
+
+Without the ON clause, the JOIN result would look as follows:
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[height=4cm]{img/week3/join_clause_syntax2.png}
+	\end{center}
+	\caption{Join operation result without ON clause.}
+	\label{fig:}
+\end{figure}
+
+In general, joining two or more tables without an ON clause gives all possible combinations of their rows. This is illustrated below for our music app.
+
+\begin{figure}[H]
+	\begin{center}
+		\includegraphics[height=4cm]{img/week3/join_clause_syntax3.png}
+	\end{center}
+	\caption{Join operation result without ON clause.}
+	\label{fig:}
+\end{figure}
+
+
+
+
+
+
+\section{Week 4 -- Many-to-many relationships}
+
+\subsection{Many-to-many relationships}
+
+So far we've talked about many-to-one relationships (e.g. multiple tracks belonging in the same album) but not many-to-many relationships (e.g. a music track being in more than one album). We will not demonstrate the many-to-many relationships on the music app, but one students being enrolled to courses. So one course can be taken (belong in) by multiple students, however each student is enrolled in multiple courses.
+
+
+\subsection{Designing and implementing a many-to-many database}
+
+When we want to model a many-to-many relationship we need to add a ``connection'' table with two foreign keys. There is usually no separate primary key.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=4cm]{img/week3/books_authors_m2m.png}
+    \caption{An logical diagram of a m2m relationships with one book belonging in multiple authors and one author writing more than one book (a divided line edge denotes ``many'').}
+    \label{fig:my_label}
+\end{figure}
+
+Returning to the course and student (account) example, we can map accounts to courses and vice versa by creating  a \emphasis{junction (a.k.a. connection, a.k.a. roster)}  between them called \texttt{Member} in this case. Member does NOT have its own primary key. Instead, it's ``meta''-primary key is the combination of the two primary keys making up the table, e.g. the account ID and course ID. Finally, the roster is able to model some additional data in one of its fields. A student can be a student in one class and a teacher in another, therefore it can store those data in a \texttt{role} field.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=4cm]{img/week3/account_student_roster.png}
+    \caption{Roster table (\texttt{Member}) between accounts and students. The roster is indexed by the \texttt{account\_id}, \texttt{member\_id} primary key combination.}
+    \label{fig:my_label}
+\end{figure}
+
+The course-to-student relationship can now be implemented. We start form outside to inside, i.e. by implementing the students and courses first, then the roster.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=3.5cm]{img/week4/course_account_code.png}
+    \caption{Course and account table code. Logical keys in green, primary keys in orange.}
+    \label{fig:my_label}
+\end{figure}
+ 
+ We then implement the junction between course and student (account), i.e. the \texttt{Member} table. There are a few important details to note about \texttt{Member}
+ \begin{itemize}
+     \item First thing to note is that the \texttt{Member} table does not take an auto-increment key.
+     \item It takes two foreign keys pointing to the tables that point to it, i.e. \texttt{Course} and \texttt{Account}.
+     \item The primary key is NOT an auto-increment key and it is NOT a single primary key. Instead, it is a \textit{combination} of he primary keys of \texttt{Course} and \texttt{Account}, i.e. \texttt{course\_id} and \texttt{account\_id}. To \texttt{Member}, \texttt{course\_id} and \texttt{account\_id} are of course foreign. The combined primary key (\texttt{course\_id},  \texttt{account\_id}) is unique and used as index in the \texttt{Member} table.
+ \end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=4.25cm]{img/week4/course_member_account_code.png}
+    \caption{The MySQL code for the Member table.}
+    \label{fig:my_label}
+\end{figure}
+
+
+\subsection{Inserting data in a many-to-many database}
+
+When inserting data, we also work from outside to inside. Therefore we first insert some accounts and some courses. Each new insertions in the two tables gets an auto-increment key and it's a good idea to write down somewhere the primary key of each account and course as an (account, course) pair will be used as the primary key of the junction when we insert data.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=4.25cm]{img/week4/insert_account_course.png}
+    \caption{Inserting accounts and emails}
+    \label{fig:insert_account}
+\end{figure}
+
+For instance, to associate  the instructor (\texttt{role = 1}) named Jane (account ID 1 in Fig. \ref{fig:insert_account}) with the Python course (course ID 1 in Fig. \ref{fig:insert_account}), we simply need to insert the values \texttt{(account\_id, course\_id, role) = (1, 1, 1)} in table \texttt{Member}, i.e.:
+\begin{verbatim}
+INSERT INTO Member (account_id, course_id, role) VALUES (1, 1, 1);
+\end{verbatim}
+Other courses and students can be associated in a similar fashion as shown below.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=4cm]{img/week4/insert_member.png}
+    \caption{Code to associate accounts to courses (many-to-many).}
+    \label{fig:my_label}
+\end{figure}
+
+
+\subsection{Join statement for many-to-many data}
+
+After inserting the members, we might want to print them. This is done by a \texttt{JOIN} statement. When filtering rows in the roster using that operation, recalled that the roster (Member) also holds copies of the primary keys \texttt{Account.account\_id} and \texttt{Course.course\_id}. The \texttt{ON} clause of the \texttt{JOIN} operation takes care of filtering the rows from the three tables and contains two conditions.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[height=4.5cm]{img/week4/join_roster_table.png}
+    \caption{Join operation on roster table to print its rows.}
+    \label{fig:my_label}
+\end{figure}
+
+%=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+% References
+%=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+\newpage
+\printbibliography
+
+
+
+
+
+%=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+% Appendices
+%=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+
+\end{document}

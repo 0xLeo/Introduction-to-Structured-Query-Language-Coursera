@@ -1,0 +1,57 @@
+1.
+Structured Query Language (SQL) is used to (check all that apply)
+- Delete data
+- Insert data
+- Create a table
+
+2.
+Which statement is the right syntax to make a new database using command line?
+- CREATE DATABASE people;
+
+3.
+"INSERT INTO" is the keyword used to insert data into tables.
+- True
+
+4.
+Which keyword is used to add conditions to your query?
+- WHERE
+
+5.
+Which command is used to retrieve all records from the table?
+- SELECT * FROM Users
+
+6. 
+Which keyword will cause the results of the query to be displayed in sorted order?
+- ORDER BY
+
+7.
+The LIMIT clause helps to narrow down the scope of the query.
+- True
+
+8.
+A [_____] column allocates a string with a variable amount of space depending on the data length that is actually stored.
+- VARCHAR
+
+9.
+A column of type CHAR cannot be indexed.
+- False
+
+10.
+Images, PDF, movies cannot be stored in a database.
+- False
+
+11.
+Column of type TIMESTAMP stores the number of seconds from January 1, [_____] in the column.
+- 1970
+
+12. 
+A primary key can be set to null.
+- False
+
+13.
+An UNSIGNED int can be a negative number.
+- False
+
+14.
+Primary keys are used to distinguish rows within in a table. [_____] keys are used to reference the primary key from a different table.
+- Foreign
