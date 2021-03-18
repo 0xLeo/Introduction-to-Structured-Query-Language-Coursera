@@ -1,0 +1,17 @@
+Chen, si106, Instructor, 1, 1, 1
+Evelyne, si106, Learner, 2, 1, 0
+Leilan, si106, Learner, 3, 1, 0
+Ruslan, si106, Learner, 4, 1, 0
+Skyla, si106, Learner, 5, 1, 0
+Qandeel, si110, Instructor, 6, 2, 1
+Cairn, si110, Learner, 7, 2, 0
+Keelan, si110, Learner, 8, 2, 0
+Petra, si110, Learner, 9, 2, 0
+Rhiana, si110, Learner, 10, 2, 0
+Damian, si206, Instructor, 11, 3, 1
+Aryan, si206, Learner, 12, 3, 0
+Ashlee, si206, Learner, 13, 3, 0
+Avi, si206, Learner, 14, 3, 0
+Rhyse, si206, Learner, 15, 3, 0
+
+
